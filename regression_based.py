@@ -14,11 +14,10 @@ def conv2d(x, W):
   return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
 def max_pool_2x2(x):
-  return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
-                        strides=[1, 2, 2, 1], padding='SAME')
+  return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 with tf.device('/gpu:0'):
-    x = tf.placeholder(tf.float32, shape=[None, 32,32,3])
+    x = tf.placeholder(tf.float32, shape=[None, 32,32, 3])
     y_ = tf.placeholder(tf.float32, shape=[None, 50])
     lr = tf.placeholder(tf.float32)
 
@@ -65,23 +64,23 @@ with tf.device('/gpu:0'):
 sess =  tf.Session(config=tf.ConfigProto(log_device_placement=True))
 sess.run(tf.initialize_all_variables())
 
+epoch = 500 #10000
+batch_size = 32
 def train(X_train, Y_train):
     train_tuple = list(zip(X_train, Y_train))
 
-    for i in range(10000):
-        batch = random.sample(train_tuple, 32)
+    for i in range(epoch):
+        batch = random.sample(train_tuple, batch_size)
         batch_X = [j[0] for j in batch]
         batch_Y = [j[1] for j in batch]
-
-        if i%10 == 0 and i!=0:
-            print("step", i, "loss", loss_val)
-
-        if i<10000:
+        if (i+1)%10 == 0:
+            print("step", i+1, "loss", loss_val)
+        if i<epoch:
             rate = 2e-4
         else:
             rate = 2e-5
-
         _, loss_val = sess.run([train_step, loss], feed_dict={x:batch_X, y_: batch_Y, keep_prob: 0.8, lr: rate})
+        
 
 def predict(X):
     prediction = sess.run([y_conv], feed_dict={x: X, keep_prob: 1.0})
